@@ -1,0 +1,230 @@
+--||-----------------------------------------
+--|| CONFIGURING ACCOUNT WITH AWS CLI
+--||-----------------------------------------
+
+Requiretments: 
+Install AWS CLI in enviroment
+
+-- Aws CLI configurar Profile
+1. Run the command below to configure the profile: 
+    aws configure --profile profile_name
+The credentials will be saved under .aws/credentials in our home directory.
+
+2. Verificar credenciales 
+    ls -ltr ~/.aws/credentials
+    cat /home/studio-lab-user/.aws/credentials
+
+
+--||-----------------------------------------
+--|| S3 USEFULL COMANDS
+--||-----------------------------------------
+
+3. List the s3 buckets
+    3.1 List all buckets 
+        aws s3 ls --profile profile_name
+    3.2 List objects of specific bucket
+        aws s3 ls s3://bucket_name --profile profile_name
+
+4. Common commands:
+    4.1 Command help to move files between local -> s3 , s3 -> s3
+        aws s3 mv help
+    4.2 Command to list objects
+        aws s3 ls s3://md-retail/retail_db/ --summarize --recursive --human-readable
+    4.3 Command help to delete objects 
+        aws rm help
+    
+    4.4 Command help to create buckets
+        aws mb help
+
+    4.5 Command help to delete all objects from a bucket
+        aws rb help
+
+
+Here are some of the important commands under s3.
+
+Listing objects and folders - ls
+
+Copying files - cp
+
+We can use cp to copy the files from the local file system to s3, s3 to the local file system as well as s3 to s3.
+
+Moving objects or folders - mv
+
+Deleting objects or folders - rm
+
+Creating bucket - mb
+
+Removing bucket - rb
+
+
+--||-----------------------------------------
+--|| IAM USEFULL COMANDS
+--||-----------------------------------------
+
+Listing users of aws iam
+    aws iam list-users
+
+Listing group of aws iam
+    aws iam list-groups
+
+Listing roles of aws iam
+    aws iam list-roles
+    
+Listing group and users related 
+    aws iam get-group --group-name {ITVMDGroup}
+    
+Listing group of specific user
+    aws iam list-groups-for-user --user-name alonsomedo-aws
+    
+Listing all policies 
+    aws iam list-policies 
+    
+Listing custom policies
+    aws iam list-policies --scope "Local"
+    
+Creating a iam user
+    aws iam create-user --user-name itvsupport2
+
+Adding user into a group
+    aws iam add-user-to-group  \
+    --group-name ITVMDGroup \
+    --user-name itvsupport2
+    
+Remove user from group
+    aws iam remove-user-from-group \
+    --group-name itvmdgroup \
+    --user-name itvsupport2
+
+Delete iam user 
+    aws iam delete-user \
+    --user-name itvsupport2 
+
+--||-----------------------------------------
+--|| EC2 USEFULL COMANDS
+--||-----------------------------------------
+
+Listing hostname of ec2 instance
+    hostname -f
+
+Lisitng operation system
+    uname -a
+    
+
+Describe instances and get the instance ids.
+
+aws ec2 describe-instances \
+ --profile itvadmin \
+ --region us-west-1
+ 
+aws ec2 describe-instances \
+ --profile itvadmin \
+ --region us-west-1 | \
+grep -i instanceid
+ 
+# You can use one of the instance ids and get instance status
+aws ec2 describe-instance-status \
+--instance-id i-07c085b765f162233 \
+ --profile itvadmin \
+ --region us-west-1
+Stop the instance and validate whether the instance is stopped or not.
+
+aws ec2 stop-instances \
+ --instance-id i-07c085b765f162233 \
+ --profile itvadmin \
+ --region us-west-1
+ 
+aws ec2 describe-instance-status \
+ --instance-id i-07c085b765f162233 \
+ --profile itvadmin \
+ --region us-west-1
+Start the instance and validate whether the instance is started or not.
+
+aws ec2 start-instances \
+ --instance-id i-07c085b765f162233 i-00f80143dc2e77b85 \
+ --profile itvadmin \
+ --region us-west-1
+ 
+aws ec2 describe-instance-status \
+ --instance-id i-07c085b765f162233 i-00f80143dc2e77b85 \
+ --profile itvadmin \
+ --region us-west-1
+List Elastic IPs that are allocated so far.
+
+aws ec2 describe-addresses \
+ --profile itvadmin \
+ --region us-west-1
+ 
+ 
+ We can run the below commands to confirm the memory and CPU configuration from within the server.
+
+free -h
+lscpu
+You can also run these commands to change the instance type using the command line.
+
+aws ec2 stop-instances \
+ --instance-id i-07c085b765f162233 \
+ --profile itvadmin \
+ --region us-west-1
+ 
+aws ec2 modify-instance-attribute \
+--instance-id i-07c085b765f162233 \
+--instance-type t2.micro \
+ --profile itvadmin \
+ --region us-west-1
+ 
+aws ec2 describe-instances \
+--instance-id i-07c085b765f162233 \
+ --profile itvadmin \
+ --region us-west-1
+ 
+aws ec2 start-instances \
+ --instance-id i-07c085b765f162233 \
+ --profile itvadmin \
+ --region us-west-1
+ 
+ 
+ Let us generate the JSON and review it to understand the structure of the metadata.
+
+aws ec2 describe-instances \
+ --profile itvadmin \
+ --region us-west-1 > instances.json
+ 
+ List all ec2 instances id.
+ 
+ aws ec2 describe-instances \
+ --region us-east-1 | grep -i instanceid
+ 
+ 
+ Get only instance ids of all the instances.
+
+aws ec2 describe-instances \
+  --query 'Reservations[*].Instances[*].{Instance:InstanceId,Status:State.Name}' \
+  --output json \
+  --profile itvadmin \
+  --region us-west-1
+ 
+
+ 
+Get all the ec2 instances which are of type t2.micro
+
+    aws ec2 describe-instances \
+     --filters Name=instance-type,Values=t2.micro \
+     --output json \
+     --profile itvadmin \
+     --region us-west-1
+
+Get only instance id, type and status of t2.micro instances.
+    aws ec2 describe-instances \
+     --filters Name=instance-type,Values=t2.micro \
+     --query 'Reservations[*].Instances[*].{Instance:InstanceId,InstanceType:InstanceType,Status:State.Name}' \
+     --output json \
+     --profile itvadmin \
+     --region us-west-1
+ 
+Get only instance id, type and status of t2.micro instances in stopped state.
+    aws ec2 describe-instances \
+     --filters Name=instance-type,Values=t2.micro Name=instance-state-name,Values=stopped \
+     --query 'Reservations[*].Instances[*].{Instance:InstanceId,InstanceType:InstanceType,Status:State.Name}' \
+     --output json \
+     --profile itvadmin \
+     --region us-west-1
